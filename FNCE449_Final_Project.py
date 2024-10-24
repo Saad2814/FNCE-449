@@ -101,3 +101,61 @@ stockC_Trades['profit_strategy2'] = stockC_Trades['price'].shift(-1) - stockC_Tr
 stockA_Trades['strategy_label'] = np.where(stockA_Trades['strategy1'] == 1, 1, 0)
 stockB_Trades['strategy_label'] = np.where(stockB_Trades['strategy1'] == 1, 1, 0)
 stockC_Trades['strategy_label'] = np.where(stockC_Trades['strategy1'] == 1, 1, 0)
+
+
+# PROPENSITY MATCHING
+x_A = stockA_Trades[['price', 'volume', 'momentum']] # using the features I want to base propensity on
+y_A = stockA_Trades['strategy_label'] # set y to be the strategy label which indicates if it is strategy 1 or 2
+
+x_B = stockB_Trades[['price', 'volume', 'momentum']]
+y_B = stockB_Trades['strategy_label']
+
+x_C = stockC_Trades[['price', 'volume', 'momentum']]
+y_C = stockC_Trades['strategy_label']
+
+logistic_model_A = LogisticRegression()
+logistic_model_A.fit(x_A, y_A)
+
+logistic_model_B = LogisticRegression()
+logistic_model_B.fit(x_B, y_B)
+
+logistic_model_C = LogisticRegression()
+logistic_model_C.fit(x_C, y_C)
+
+# calculate propensity score by predicting class probabilities
+stockA_Trades['propensity_score'] = logistic_model_A.predict_proba(x_A)[:, 1]
+stockB_Trades['propensity_score'] = logistic_model_B.predict_proba(x_B)[:, 1]
+stockC_Trades['propensity_score'] = logistic_model_C.predict_proba(x_C)[:, 1]
+
+# use nearest neighbors to match trades
+treated_A = stockA_Trades[stockA_Trades['strategy_label'] == 1] # the "treated" observations are those that used strategy 1
+treated_B = stockB_Trades[stockB_Trades['strategy_label'] == 1]
+treated_C = stockC_Trades[stockC_Trades['strategy_label'] == 1]
+
+control_A = stockA_Trades[stockA_Trades['strategy_label'] == 0] # the "control" observations are those that used strategy 2
+control_B = stockB_Trades[stockB_Trades['strategy_label'] == 0]
+control_C = stockC_Trades[stockC_Trades['strategy_label'] == 0]
+
+nn_A = NearestNeighbors(n_neighbors = 1) # apply the Nearest Neighbors model
+nn_A.fit(control_A[['propensity_score']]) # fit the Nearest Neighbors model on the control dataset
+
+nn_B = NearestNeighbors(n_neighbors = 1)
+nn_B.fit(control_B[['propensity_score']])
+
+nn_C = NearestNeighbors(n_neighbors = 1)
+nn_C.fit(control_C[['propensity_score']])
+
+# find the closest control match for each treated observation
+distances_A, indices_A = nn_A.kneighbors(treated_A[['propensity_score']])
+distances_B, indices_B = nn_B.kneighbors(treated_B[['propensity_score']])
+distances_C, indices_C = nn_C.kneighbors(treated_C[['propensity_score']])
+
+# get the matched control data
+matched_control_A = control_A.iloc[indices_A.flatten()]
+matched_control_B = control_B.iloc[indices_B.flatten()]
+matched_control_C = control_C.iloc[indices_C.flatten()]
+
+# concatenate the treated and control data for matched pairs
+matched_pairs_A = pd.concat([treated_A.reset_index(drop = True), matched_control_A.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
+matched_pairs_B = pd.concat([treated_B.reset_index(drop = True), matched_control_B.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
+matched_pairs_C = pd.concat([treated_C.reset_index(drop = True), matched_control_C.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
