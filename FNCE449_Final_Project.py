@@ -159,3 +159,71 @@ matched_control_C = control_C.iloc[indices_C.flatten()]
 matched_pairs_A = pd.concat([treated_A.reset_index(drop = True), matched_control_A.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
 matched_pairs_B = pd.concat([treated_B.reset_index(drop = True), matched_control_B.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
 matched_pairs_C = pd.concat([treated_C.reset_index(drop = True), matched_control_C.reset_index(drop = True)], axis = 1, keys = ['Treated', 'Control'])
+
+
+# COMPARE PROFITS BETWEEN MATCHED TRADES
+# create a new column for strategy A (treated) profit and strategy B (control) profit
+matched_pairs_A['treated_profit'] = matched_pairs_A[('Treated', 'profit_strategy1')]
+matched_pairs_A['control_profit'] = matched_pairs_A[('Control', 'profit_strategy2')]
+
+matched_pairs_B['treated_profit'] = matched_pairs_B[('Treated', 'profit_strategy1')]
+matched_pairs_B['control_profit'] = matched_pairs_B[('Control', 'profit_strategy2')]
+
+matched_pairs_C['treated_profit'] = matched_pairs_C[('Treated', 'profit_strategy1')]
+matched_pairs_C['control_profit'] = matched_pairs_C[('Control', 'profit_strategy2')]
+
+# compute the average profits for each strategy by taking the mean
+treated_profit_average_A = matched_pairs_A['treated_profit'].mean()
+control_profit_average_A = matched_pairs_A['control_profit'].mean()
+
+treated_profit_average_B = matched_pairs_B['treated_profit'].mean()
+control_profit_average_B = matched_pairs_B['control_profit'].mean()
+
+treated_profit_average_C = matched_pairs_C['treated_profit'].mean()
+control_profit_average_C = matched_pairs_C['control_profit'].mean()
+
+# compute the difference in average profits between the two strategies
+profit_difference_A = treated_profit_average_A - control_profit_average_C
+profit_difference_B = treated_profit_average_B - control_profit_average_B
+profit_difference_C = treated_profit_average_C - control_profit_average_C
+
+# create lists for easier printing and graphing
+list_treated_profit_averages = [treated_profit_average_A, treated_profit_average_B, treated_profit_average_C]
+list_control_profit_averages = [control_profit_average_A, control_profit_average_B, control_profit_average_C]
+list_profit_differences = [profit_difference_A, profit_difference_B, profit_difference_C]
+
+# print out the results
+for symbol, treated_average, control_average, profit_difference in zip(list_symbols, list_treated_profit_averages, list_control_profit_averages, list_profit_differences):
+    
+    print(f"Stock Ticker: {symbol}")
+    print(f"Average Profit of Strategy A (Treated): {treated_average}")
+    print(f"Average Profit of Strategy B (Control): {control_average}")
+    print(f"Average Profit Difference (Strategy A - Strategy B): {profit_difference}")
+    print(f"\n")
+
+
+bar_width = 0.35 # use a custom bar width
+x = np.arange(len(list_symbols))  # get evenly spaced elements
+
+fig, ax1 = plt.subplots() # create figures and axes
+
+# plot the treated profit and control profit bars
+treated_bars = ax1.bar(x - bar_width/2, list_treated_profit_averages, bar_width, label='Average Treated Profit (Strategy A)', color = 'o')
+control_bars = ax1.bar(x + bar_width/2, list_control_profit_averages, bar_width, label='Average Control Profit (Strategy B)', color = 'y')
+
+ax1.set_xlabel('Stock Symbols') # set x axis label
+ax1.set_ylabel('Average Profits') # set y axis label
+ax1.set_title('Average Treatment Profit (Strategy A) vs Average Control Profit (Strategy B) by Stock Symbol') # set chart title
+ax1.set_xticks(x) # set x axis ticks
+ax1.set_xticklabels(list_symbols) # ticks should be labelled with the ticker symbols
+ax1.legend() # include a legend to be able to differentiate between the 2 bars
+
+ax2 = ax1.twinx() # use a secondary y-axis for the profit differences
+ax2.plot(x, list_profit_differences, color='r', marker='*', label='Average Profit Difference', linewidth=2) # plot the profit differences
+ax2.set_ylabel('Average Profit Difference (Treated - Control)', color='r') # add label to the second y-axis
+ax2.tick_params(axis='y', labelcolor='r') # set y axis ticks
+ax2.legend() # include a legend to be able to tell what the line represents
+
+# show plot
+plt.tight_layout()
+plt.show()
