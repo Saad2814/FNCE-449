@@ -84,3 +84,20 @@ stockC_Trades['strategy1'] = np.where(stockC_Trades['price'] > stockC_Trades['50
 stockA_Trades['strategy2'] = np.where(stockA_Trades['price_momentum'] > 0, 1, 0)
 stockB_Trades['strategy2'] = np.where(stockB_Trades['price_momentum'] > 0, 1, 0)
 stockC_Trades['strategy2'] = np.where(stockC_Trades['price_momentum'] > 0, 1, 0)
+
+
+# IMPLEMENTING A PROFIT MODEL FOR EACH STRATEGY
+# strategy 1
+stockA_Trades['profit_strategy1'] = stockA_Trades['price'].shift(-1) - stockA_Trades['price']
+stockB_Trades['profit_strategy1'] = stockB_Trades['price'].shift(-1) - stockB_Trades['price']
+stockC_Trades['profit_strategy1'] = stockC_Trades['price'].shift(-1) - stockC_Trades['price']
+
+#strategy 2
+stockA_Trades['profit_strategy2'] = stockA_Trades['price'].shift(-1) - stockA_Trades['price']
+stockB_Trades['profit_strategy2'] = stockB_Trades['price'].shift(-1) - stockB_Trades['price']
+stockC_Trades['profit_strategy2'] = stockC_Trades['price'].shift(-1) - stockC_Trades['price']
+
+# label the strategies (strategy 1 = 1, strategy 2 = 0)
+stockA_Trades['strategy_label'] = np.where(stockA_Trades['strategy1'] == 1, 1, 0)
+stockB_Trades['strategy_label'] = np.where(stockB_Trades['strategy1'] == 1, 1, 0)
+stockC_Trades['strategy_label'] = np.where(stockC_Trades['strategy1'] == 1, 1, 0)
