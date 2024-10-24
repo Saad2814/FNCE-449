@@ -62,3 +62,25 @@ for symbol, csv in zip(list_symbols,list_csvs):
 stockA_Trades = pd.read_csv("nvds.csv") # NVDA dataframe
 stockB_Trades = pd.read_csv("aapl.csv") # AAPL dataframe
 stockC_Trades = pd.read_csv("msft.csv") # MSFT dataframe
+
+
+# DEFINING THE TWO TRADING STRATEGIES
+stockA_Trades['50_Period_MA'] = stockA_Trades['price'].rolling(window=50).mean() # first strategy is the 50-period moving average
+stockB_Trades['50_Period_MA'] = stockB_Trades['price'].rolling(window=50).mean()
+stockC_Trades['50_Period_MA'] = stockC_Trades['price'].rolling(window=50).mean()
+
+stockA_Trades['price_momentum'] = stockA_Trades['price'].diff() # second strategy is a price difference strategy based on momentum
+stockB_Trades['price_momentum'] = stockB_Trades['price'].diff()
+stockC_Trades['price_momentum'] = stockC_Trades['price'].diff()
+
+# note that both stratgies are similar, but the first strategy is over a much longer time period
+
+# for strategy 1, buy when the price is > the 50-period moving average and sell otherwise (Buy = 1, Sell = 0)
+stockA_Trades['strategy1'] = np.where(stockA_Trades['price'] > stockA_Trades['50_Period_MA'], 1, 0)
+stockB_Trades['strategy1'] = np.where(stockB_Trades['price'] > stockB_Trades['50_Period_MA'], 1, 0)
+stockC_Trades['strategy1'] = np.where(stockC_Trades['price'] > stockC_Trades['50_Period_MA'], 1, 0)
+
+# for strategy 2, buy when the momentum is > 0 and sell otherwise (Buy = 1, Sell = 0)
+stockA_Trades['strategy2'] = np.where(stockA_Trades['price_momentum'] > 0, 1, 0)
+stockB_Trades['strategy2'] = np.where(stockB_Trades['price_momentum'] > 0, 1, 0)
+stockC_Trades['strategy2'] = np.where(stockC_Trades['price_momentum'] > 0, 1, 0)
