@@ -15,7 +15,7 @@ _risk_free_rates.csv_ --> a data file which stores the daily risk risk-free rate
 _Graph_FigureX.png_ --> png files stored in the "Outputs" folder which contain the output graphs (Figure1 - Figure5)
 
 **Accessing the Program:**  
-The user must download the Python file labelled FNCE449_Final_Project.py. The user must ensure that they have the modules pandas, numpy, and matplotlib installed. If they do not, this can be done using pip.
+The user must download the Python file labelled FNCE449_Final_Project.py. The user must ensure that they have the modules (pandas, numpy, and matplotlib) installed. If they do not, this can be done using pip.
 
 **Executing the Program:**  
 The program reads from csv files stored on this GitHub repository so the user doesn't have to worry about downloading this data. If the program is being run on an IDE such as VSCode, the user may simply hit the "run" button to execute the program. If being run through the local terminal, after navigating to the correct directory, the following is an example of how the file can be run: C:\Users\saada\Downloads\FNCE449>python .\FNCE449_Final_Project.py
